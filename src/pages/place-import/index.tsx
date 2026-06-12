@@ -63,7 +63,7 @@ function PlaceImportPageContent() {
   const [titlesText, setTitlesText] = useState('');
   const [descriptionsText, setDescriptionsText] = useState('');
   const [urlsText, setUrlsText] = useState('');
-  const [imagesFolder, setImagesFolder] = useState('/var/www/sancan.ru/product-parser/foto'); // Папка с изображениями по умолчанию
+  const [imagesFolder, setImagesFolder] = useState('/var/www/treabo/product-parser/foto');
   
   // Поиск пользователя
   const [userSearchTerm, setUserSearchTerm] = useState('');
