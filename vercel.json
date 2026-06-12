@@ -1,7 +1,7 @@
 {
   "env": {
-    "NEXT_PUBLIC_REST_API_ENDPOINT": "https://seller.treabo.md",
-    "NEXT_PUBLIC_API_URL": "https://seller.treabo.md",
+    "NEXT_PUBLIC_REST_API_ENDPOINT": "https://api.treabo.md",
+    "NEXT_PUBLIC_API_URL": "https://api.treabo.md",
     "NEXT_PUBLIC_SHOP_URL": "https://treabo.md",
     "NEXT_PUBLIC_GOOGLE_MAP_API_KEY": "",
     "NEXT_PUBLIC_YANDEX_MAPS_API_KEY": "",
@@ -13,8 +13,8 @@
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_REST_API_ENDPOINT": "https://seller.treabo.md",
-      "NEXT_PUBLIC_API_URL": "https://seller.treabo.md",
+      "NEXT_PUBLIC_REST_API_ENDPOINT": "https://api.treabo.md",
+      "NEXT_PUBLIC_API_URL": "https://api.treabo.md",
       "NEXT_PUBLIC_SHOP_URL": "https://treabo.md",
       "NEXT_PUBLIC_GOOGLE_MAP_API_KEY": "",
       "NEXT_PUBLIC_YANDEX_MAPS_API_KEY": "",

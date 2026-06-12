@@ -73,7 +73,15 @@ const LoginForm = () => {
             setErrorMessage('form:error-credential-wrong');
           }
         },
-        onError: () => {},
+        onError: (error: any) => {
+          const message =
+            error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            error?.message ||
+            'Не удалось войти. Проверьте email/пароль и что API доступен (api.treabo.md).';
+          setErrorMessage(message);
+          toast.error(message);
+        },
       }
     );
   }

@@ -5,6 +5,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { getAuthCredentials, isAuthenticated } from '@/utils/auth-utils';
 import { useRouter } from 'next/router';
 import AuthPageLayout from '@/components/layouts/auth-layout';
+import ProffiAdminTokenField from '@/components/auth/proffi-admin-token-field';
 import { Routes } from '@/config/routes';
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
@@ -27,6 +28,7 @@ export default function LoginPage() {
         {t('admin-login-title')}
       </h3>
       <LoginForm />
+      <ProffiAdminTokenField />
     </AuthPageLayout>
   );
 }
