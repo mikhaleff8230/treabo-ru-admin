@@ -139,4 +139,13 @@ export const Routes = {
     settings: '/billing/settings',
     paymentHistory: '/billing/payment-history',
   },
+  proffi: {
+    dashboard: '/proffi',
+    customers: '/proffi/customers',
+    specialists: '/proffi/specialists',
+    tasks: '/proffi/tasks',
+    applications: '/proffi/applications',
+    chats: '/proffi/chats',
+    aiChat: '/proffi/ai-chat',
+  },
 };

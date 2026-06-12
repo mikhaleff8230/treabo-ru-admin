@@ -38,6 +38,48 @@ export const siteSettings = {
         icon: 'DashboardIcon',
       },
       {
+        href: Routes.proffi.dashboard,
+        label: 'Proffi',
+        icon: 'DashboardIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.customers,
+        label: 'Proffi заказчики',
+        icon: 'UsersIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.specialists,
+        label: 'Proffi специалисты',
+        icon: 'UsersIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.tasks,
+        label: 'Proffi заказы',
+        icon: 'OrdersIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.applications,
+        label: 'Proffi отклики',
+        icon: 'DiaryIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.chats,
+        label: 'Proffi чаты',
+        icon: 'ChatIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.aiChat,
+        label: 'AI чат',
+        icon: 'QuestionIcon',
+        permissions: adminOnly,
+      },
+      {
         href: Routes.shop.list,
         label: 'sidebar-nav-item-shops',
         icon: 'ShopIcon',
