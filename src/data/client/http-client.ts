@@ -78,6 +78,7 @@ Axios.interceptors.response.use(
     const excludedUrls = [
       '/products', // Запросы к товарам могут возвращать 403 при недостатке прав
       '/shops',    // Запросы к магазинам могут возвращать 403 при недостатке прав
+      '/me',       // /me обрабатывается useMeQuery, не перезагружать всё приложение
     ];
     
     // Проверяем, не является ли это запрос на создание/обновление товара
@@ -127,8 +128,9 @@ Axios.interceptors.response.use(
     // 2. Для явной ошибки авторизации (PICKBAZAR_ERROR.NOT_AUTHORIZED) - всегда разлогиниваем
     // 3. Для 403 при создании товара - не разлогиниваем (товар может создаваться в черновике)
     const shouldLogout = isAuthError && 
-        !(status === 403 && isProductCreateUpdate && !isExplicitAuthError) && // 403 при создании товара - не разлогиниваем
-        !(status === 401 && isProductCreateUpdate); // 401 при создании товара - не разлогиниваем (товар может создаваться)
+        !isExcludedUrl &&
+        !(status === 403 && isProductCreateUpdate && !isExplicitAuthError) &&
+        !(status === 401 && isProductCreateUpdate);
     
     if (shouldLogout) {
       // Проверяем, не находимся ли мы уже в процессе перезагрузки

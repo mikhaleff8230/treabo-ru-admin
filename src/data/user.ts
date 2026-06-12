@@ -27,17 +27,21 @@ export const useMeQuery = () => {
       }
     },
 
-    onError: (err) => {
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 409) {
-          setEmailVerified(false);
-          router.replace(Routes.verifyEmail);
-          return;
-        }
-        queryClient.clear();
-        router.replace(Routes.login);
-      }
-    },
+        onError: (err) => {
+          if (axios.isAxiosError(err)) {
+            if (err.response?.status === 409) {
+              setEmailVerified(false);
+              router.replace(Routes.verifyEmail);
+              return;
+            }
+            // Do not redirect from login — avoids reload loop when /me fails
+            if (router.pathname === Routes.login) {
+              return;
+            }
+            queryClient.clear();
+            router.replace(Routes.login);
+          }
+        },
   });
 };
 
