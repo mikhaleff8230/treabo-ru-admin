@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAuthCredentials } from '@/utils/auth-utils';
 
 const baseURL =
   process.env.NEXT_PUBLIC_REST_API_ENDPOINT ||
@@ -11,6 +12,7 @@ const proffiAdminApi = axios.create({
 });
 
 proffiAdminApi.interceptors.request.use((config) => {
+  const { token: bearerToken } = getAuthCredentials();
   const localToken =
     typeof window !== 'undefined'
       ? window.localStorage.getItem('admin_token')?.trim()
@@ -18,7 +20,11 @@ proffiAdminApi.interceptors.request.use((config) => {
   const token =
     localToken || process.env.NEXT_PUBLIC_PROFFI_ADMIN_TOKEN || 'admin';
 
-  (config.headers as any)['X-Admin-Token'] = token;
+  config.headers = {
+    ...config.headers,
+    ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
+    'X-Admin-Token': token,
+  } as any;
 
   return config;
 });

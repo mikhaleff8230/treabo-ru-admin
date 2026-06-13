@@ -24,7 +24,7 @@ export default function ProffiAdminTokenField() {
   return (
     <div className="mt-6 border-t border-border-200 pt-5">
       <Input
-        label="Treabo admin token (Proffi)"
+        label="Treabo admin token"
         type="password"
         value={token}
         onChange={(e) => handleChange(e.target.value)}
@@ -33,7 +33,7 @@ export default function ProffiAdminTokenField() {
         className="mb-1"
       />
       <p className="text-xs text-body">
-        Нужен для раздела Proffi (/proffi). Должен совпадать с{' '}
+        Нужен для раздела Treabo. Должен совпадать с{' '}
         <code className="text-xs">PROFFI_ADMIN_TOKEN</code> в pixer-api.
       </p>
     </div>

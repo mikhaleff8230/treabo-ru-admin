@@ -153,7 +153,7 @@ export default function ProffiAiChatPage() {
   return (
     <>
       <ProffiPageHeader
-        title="AI чат"
+        title="AI чат Treabo"
         subtitle="База знаний для AI-оформления заявок: категории, виды работ, параметры, уточняющие вопросы и системные инструкции."
       />
 

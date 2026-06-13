@@ -17,7 +17,7 @@ export default function ProffiTasks() {
 
   return (
     <>
-      <ProffiPageHeader title="Заказы Proffi" subtitle="Заявки, созданные заказчиками в приложении." />
+      <ProffiPageHeader title="Заказы Treabo" subtitle="Заявки, созданные заказчиками в приложении." />
       {error ? <ProffiError message={error} /> : null}
       <div className="overflow-hidden rounded border border-border-200 bg-light">
         <div className="overflow-x-auto">

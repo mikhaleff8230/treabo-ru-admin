@@ -17,7 +17,7 @@ export default function ProffiSpecialists() {
 
   return (
     <>
-      <ProffiPageHeader title="Специалисты Proffi" subtitle="Пользователи приложения с ролью store_owner/specialist." />
+      <ProffiPageHeader title="Специалисты Treabo" subtitle="Пользователи приложения с ролью store_owner/specialist." />
       {error ? <ProffiError message={error} /> : null}
       <div className="overflow-hidden rounded border border-border-200 bg-light">
         <div className="overflow-x-auto">

@@ -17,7 +17,7 @@ export default function ProffiApplications() {
 
   return (
     <>
-      <ProffiPageHeader title="Отклики Proffi" subtitle="Отклики специалистов на заказы." />
+      <ProffiPageHeader title="Отклики Treabo" subtitle="Отклики специалистов на заказы." />
       {error ? <ProffiError message={error} /> : null}
       <div className="overflow-hidden rounded border border-border-200 bg-light">
         <div className="overflow-x-auto">

@@ -29,7 +29,7 @@ export default function ProffiDashboard() {
   return (
     <>
       <ProffiPageHeader
-        title="Proffi"
+        title="Treabo"
         subtitle="Инфраструктура приложения: пользователи, заказы, отклики, чаты и переписка."
       />
       {error ? <ProffiError message={error} /> : null}

@@ -39,7 +39,7 @@ export default function ProffiChats() {
 
   return (
     <>
-      <ProffiPageHeader title="Чаты Proffi" subtitle="Диалоги заказчиков и специалистов, включая переписку." />
+      <ProffiPageHeader title="Чаты Treabo" subtitle="Диалоги заказчиков и специалистов, включая переписку." />
       {error ? <ProffiError message={error} /> : null}
       <div className="grid min-h-[70vh] grid-cols-1 gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
         <div className="overflow-hidden rounded border border-border-200 bg-light">

@@ -17,7 +17,7 @@ export default function ProffiCustomers() {
 
   return (
     <>
-      <ProffiPageHeader title="Заказчики Proffi" subtitle="Пользователи приложения с ролью customer." />
+      <ProffiPageHeader title="Заказчики Treabo" subtitle="Пользователи приложения с ролью customer." />
       {error ? <ProffiError message={error} /> : null}
       <UsersTable rows={rows} />
     </>
