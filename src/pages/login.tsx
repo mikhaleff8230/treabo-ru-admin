@@ -3,7 +3,6 @@ import { useTranslation } from 'next-i18next';
 import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import AuthPageLayout from '@/components/layouts/auth-layout';
-import ProffiAdminTokenField from '@/components/auth/proffi-admin-token-field';
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
@@ -20,7 +19,6 @@ export default function LoginPage() {
         {t('admin-login-title')}
       </h3>
       <LoginForm />
-      <ProffiAdminTokenField />
     </AuthPageLayout>
   );
 }
