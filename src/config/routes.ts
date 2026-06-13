@@ -146,6 +146,8 @@ export const Routes = {
     tasks: '/proffi/tasks',
     applications: '/proffi/applications',
     chats: '/proffi/chats',
+    categories: '/proffi/categories',
+    filters: '/proffi/filters',
     aiChat: '/proffi/ai-chat',
   },
 };
