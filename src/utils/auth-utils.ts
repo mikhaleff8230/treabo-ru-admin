@@ -64,7 +64,15 @@ export function getAuthCredentials(context?: any): {
       Cookie.get('authToken');
   }
   if (authCred) {
-    return JSON.parse(authCred);
+    try {
+      return JSON.parse(authCred);
+    } catch {
+      try {
+        return JSON.parse(decodeURIComponent(authCred));
+      } catch {
+        return { token: null, permissions: null };
+      }
+    }
   }
   return { token: null, permissions: null };
 }
