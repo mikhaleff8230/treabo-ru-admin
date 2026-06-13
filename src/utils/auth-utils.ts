@@ -17,7 +17,22 @@ export const ownerOnly = [STORE_OWNER];
 export const ownerAndStaffOnly = [STORE_OWNER, STAFF];
 
 export function setAuthCredentials(token: string, permissions: any) {
-  Cookie.set(AUTH_CRED, JSON.stringify({ token, permissions }));
+  const payload = JSON.stringify({ token, permissions });
+  Cookie.set(AUTH_CRED, payload);
+
+  const configuredKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY;
+  if (configuredKey && configuredKey !== AUTH_CRED) {
+    Cookie.set(configuredKey, payload);
+  }
+}
+
+export function clearAuthCredentials() {
+  Cookie.remove(AUTH_CRED);
+  const legacyKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY;
+  if (legacyKey && legacyKey !== AUTH_CRED) {
+    Cookie.remove(legacyKey);
+  }
+  Cookie.remove('authToken');
 }
 export function setEmailVerified(emailVerified: boolean) {
   Cookie.set(EMAIL_VERIFIED, JSON.stringify({ emailVerified }));
@@ -35,9 +50,18 @@ export function getAuthCredentials(context?: any): {
 } {
   let authCred;
   if (context) {
-    authCred = parseSSRCookie(context)[AUTH_CRED];
+    const cookies = parseSSRCookie(context);
+    const configuredKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY;
+    authCred =
+      cookies[AUTH_CRED] ||
+      (configuredKey ? cookies[configuredKey] : undefined) ||
+      cookies.authToken;
   } else {
-    authCred = Cookie.get(AUTH_CRED);
+    const configuredKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY;
+    authCred =
+      Cookie.get(AUTH_CRED) ||
+      (configuredKey ? Cookie.get(configuredKey) : undefined) ||
+      Cookie.get('authToken');
   }
   if (authCred) {
     return JSON.parse(authCred);
@@ -67,4 +91,3 @@ export function isAuthenticated(_cookies: any) {
     !!_cookies[PERMISSIONS].length
   );
 }
-
