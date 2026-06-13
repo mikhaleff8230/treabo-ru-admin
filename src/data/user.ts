@@ -1,6 +1,4 @@
-import { AUTH_CRED } from '@/utils/constants';
 import { Routes } from '@/config/routes';
-import Cookies from 'js-cookie';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -10,38 +8,49 @@ import { userClient } from './client/user';
 import { User, QueryOptionsType, UserPaginator } from '@/types';
 import { mapPaginatorData } from '@/utils/data-mappers';
 import axios from "axios";
-import { setEmailVerified } from "@/utils/auth-utils";
+import { clearAuthCredentials, getAuthCredentials, setEmailVerified } from "@/utils/auth-utils";
 
 
 export const useMeQuery = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { token } = getAuthCredentials();
 
   return useQuery<User, Error>([API_ENDPOINTS.ME], userClient.me, {
+    enabled: !!token,
     retry: false,
+    staleTime: 60_000,
 
     onSuccess: () => {
       if (router.pathname === Routes.verifyEmail) {
         setEmailVerified(true);
         router.replace(Routes.dashboard);
+        return;
+      }
+      if (router.pathname === Routes.login) {
+        router.replace(Routes.dashboard);
       }
     },
 
-        onError: (err) => {
-          if (axios.isAxiosError(err)) {
-            if (err.response?.status === 409) {
-              setEmailVerified(false);
-              router.replace(Routes.verifyEmail);
-              return;
-            }
-            // Do not redirect from login — avoids reload loop when /me fails
-            if (router.pathname === Routes.login) {
-              return;
-            }
-            queryClient.clear();
-            router.replace(Routes.login);
-          }
-        },
+    onError: (err) => {
+      if (!axios.isAxiosError(err)) {
+        return;
+      }
+      if (err.response?.status === 409) {
+        setEmailVerified(false);
+        router.replace(Routes.verifyEmail);
+        return;
+      }
+      if (router.pathname === Routes.login) {
+        clearAuthCredentials();
+        return;
+      }
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        clearAuthCredentials();
+        queryClient.clear();
+        router.replace(Routes.login);
+      }
+    },
   });
 };
 
@@ -83,7 +92,7 @@ export const useLogoutMutation = () => {
 
   return useMutation(userClient.logout, {
     onSuccess: () => {
-      Cookies.remove(AUTH_CRED);
+      clearAuthCredentials();
       router.replace(Routes.login);
       toast.success(t('common:successfully-logout'));
     },

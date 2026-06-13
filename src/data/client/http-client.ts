@@ -1,8 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import Router from 'next/router';
 import invariant from 'tiny-invariant';
 import { toast } from 'react-toastify';
+import { AUTH_CRED } from '@/utils/constants';
+import { getAuthCredentials } from '@/utils/auth-utils';
 
 invariant(
   process.env.NEXT_PUBLIC_REST_API_ENDPOINT || process.env.NEXT_PUBLIC_API_URL,
@@ -17,17 +18,30 @@ const Axios = axios.create({
   },
 });
 // Change request data/error
-const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
-Axios.interceptors.request.use((config) => {
-  const cookies = Cookies.get(AUTH_TOKEN_KEY);
-  let token = '';
-  if (cookies) {
-    token = JSON.parse(cookies)['token'];
+const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? AUTH_CRED;
+
+function readAuthToken(): string {
+  const { token } = getAuthCredentials();
+  if (token) {
+    return token;
   }
-// @ts-ignore
+  const legacy = Cookies.get(AUTH_TOKEN_KEY);
+  if (legacy) {
+    try {
+      return JSON.parse(legacy).token ?? '';
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
+Axios.interceptors.request.use((config) => {
+  const token = readAuthToken();
+  // @ts-ignore
   config.headers = {
     ...config.headers,
-    Authorization: `Bearer ${token}`,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
   
   // Если отправляем FormData, удаляем Content-Type чтобы браузер установил правильный boundary
@@ -54,102 +68,26 @@ Axios.interceptors.request.use((config) => {
   return config;
 });
 
-// Change response data/error here
-let isReloading = false; // Защита от бесконечного цикла перезагрузок
-
+// Session invalidation is handled by useMeQuery — no global reload/redirect here (prevents loops).
 Axios.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const url = error.config?.url || '';
     const message = error.response?.data?.message || '';
-    
-    // Проверяем, что это действительно ошибка авторизации (токен отсутствует или невалиден)
-    // а не ошибка прав доступа (403 может быть из-за недостатка прав, но пользователь авторизован)
-    const isAuthError = 
-      status === 401 || 
-      (status === 403 && message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED') ||
-      message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED';
-    
-    // Исключаем обработку 401/403 для определенных запросов, которые могут возвращать эти ошибки
-    // по другим причинам (например, недостаточно прав, но пользователь авторизован)
-    // ВАЖНО: Не разлогиниваем при 403 для запросов на создание/обновление товара,
-    // так как товар может создаваться даже при недостатке прав (в статусе черновик)
-    const excludedUrls = [
-      '/products', // Запросы к товарам могут возвращать 403 при недостатке прав
-      '/shops',    // Запросы к магазинам могут возвращать 403 при недостатке прав
-      '/me',       // /me обрабатывается useMeQuery, не перезагружать всё приложение
-    ];
-    
-    // Проверяем, не является ли это запрос на создание/обновление товара
-    const isProductCreateUpdate = url.includes('/products') && 
-      (error.config?.method === 'post' || error.config?.method === 'put' || error.config?.method === 'patch');
-    
-    // Проверяем, не является ли это запрос, который мы должны исключить
-    const isExcludedUrl = excludedUrls.some(excludedUrl => url.includes(excludedUrl));
-    
-    // Проверяем наличие токена - если токен есть, то 403 может быть ошибкой прав доступа,
-    // а не авторизации
-    const cookies = Cookies.get(AUTH_TOKEN_KEY);
-    let hasToken = false;
-    if (cookies) {
-      try {
-        const tokenData = JSON.parse(cookies);
-        hasToken = !!tokenData?.token;
-      } catch (e) {
-        hasToken = false;
-      }
-    }
-    
-    // Определяем тип ошибки
-    const isExplicitAuthError = message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED';
-    const isPermissionError = status === 403 && hasToken && !isExplicitAuthError; // 403 с токеном - ошибка прав доступа
-    const isUnauthorizedError = status === 401 && !isProductCreateUpdate; // 401 - ошибка авторизации (кроме создания товара)
-    
-    // Показываем уведомление при ошибке прав доступа (403 с токеном)
+    const hasToken = !!readAuthToken();
+    const isPermissionError =
+      status === 403 &&
+      hasToken &&
+      message !== 'PICKBAZAR_ERROR.NOT_AUTHORIZED';
+
     if (isPermissionError) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          'Недостаточно прав для выполнения этого действия';
-      toast.error(errorMessage, {
-        autoClose: 5000,
-      });
-      console.warn('Permission error (403 with token):', {
-        status: error.response?.status,
-        url: error.config?.url,
-        message: error.response?.data?.message,
-      });
-      // Не разлогиниваем при ошибке прав доступа - просто показываем уведомление
-      return Promise.reject(error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Недостаточно прав для выполнения этого действия';
+      toast.error(errorMessage, { autoClose: 5000 });
     }
-    
-    // Логика разлогинивания:
-    // 1. Для 401: разлогиниваем только если это не запрос на создание/обновление товара
-    // 2. Для явной ошибки авторизации (PICKBAZAR_ERROR.NOT_AUTHORIZED) - всегда разлогиниваем
-    // 3. Для 403 при создании товара - не разлогиниваем (товар может создаваться в черновике)
-    const shouldLogout = isAuthError && 
-        !isExcludedUrl &&
-        !(status === 403 && isProductCreateUpdate && !isExplicitAuthError) &&
-        !(status === 401 && isProductCreateUpdate);
-    
-    if (shouldLogout) {
-      // Проверяем, не находимся ли мы уже в процессе перезагрузки
-      if (!isReloading) {
-        isReloading = true;
-        console.error('Authorization error, redirecting to login...', {
-          status: error.response?.status,
-          url: error.config?.url,
-          message: error.response?.data?.message,
-          hasToken: hasToken
-        });
-        Cookies.remove(AUTH_TOKEN_KEY);
-        
-        // Небольшая задержка перед перезагрузкой для избежания спама
-        setTimeout(() => {
-          Router.reload();
-        }, 100);
-      }
-    }
+
     return Promise.reject(error);
   }
 );

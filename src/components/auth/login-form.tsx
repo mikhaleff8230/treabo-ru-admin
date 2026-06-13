@@ -22,6 +22,14 @@ import OtpCodeInput from './otp-code-input';
 import PinCodeInput from './pin-code-input';
 import { toast } from 'react-toastify';
 
+function goToDashboard() {
+  if (typeof window !== 'undefined') {
+    window.location.assign(Routes.dashboard);
+    return;
+  }
+  Router.push(Routes.dashboard);
+}
+
 const loginFormSchema = yup.object().shape({
   email: yup
     .string()
@@ -65,7 +73,7 @@ const LoginForm = () => {
           if (data?.token) {
             if (hasAccess(allowedRoles, data?.permissions)) {
               setAuthCredentials(data?.token, data?.permissions);
-              Router.push(Routes.dashboard);
+              goToDashboard();
               return;
             }
             setErrorMessage('form:error-enough-permission');
@@ -133,7 +141,7 @@ const LoginForm = () => {
           if (data?.token) {
             if (hasAccess(allowedRoles, data?.permissions)) {
               setAuthCredentials(data?.token, data?.permissions);
-              Router.push(Routes.dashboard);
+              goToDashboard();
               return;
             }
             setOtpError('Недостаточно прав доступа');
@@ -171,7 +179,7 @@ const LoginForm = () => {
           if (data?.token) {
             if (hasAccess(allowedRoles, data?.permissions)) {
               setAuthCredentials(data?.token, data?.permissions);
-              Router.push(Routes.dashboard);
+              goToDashboard();
               return;
             }
             setPinError('Недостаточно прав доступа');
