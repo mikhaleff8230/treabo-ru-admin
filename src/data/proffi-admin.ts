@@ -52,10 +52,31 @@ export type ProffiUser = {
   created_at?: string | null;
 };
 
+export type TreaboCategory = {
+  id: string;
+  parent_id?: string | null;
+  icon?: string | null;
+  name_ru: string;
+  name_ro: string;
+  slug?: string | null;
+  is_active?: boolean;
+  sort_order?: number;
+};
+
+export type TreaboFilter = {
+  id: string;
+  name: string;
+  key: string;
+  value: string;
+};
+
 export type ProffiTask = {
   id: string;
   title: string;
   description?: string | null;
+  category?: string | null;
+  category_id?: string | null;
+  customer_id?: string | null;
   status: string;
   customer_name?: string | null;
   customer_phone?: string | null;
@@ -63,6 +84,8 @@ export type ProffiTask = {
   city?: string | null;
   address?: string | null;
   budget?: number | null;
+  response_price_mdl?: number | null;
+  deadline?: string | null;
   applications_count: number;
   photos_count: number;
   created_at?: string | null;

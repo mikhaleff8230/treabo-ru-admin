@@ -1,14 +1,30 @@
 import Layout from '@/components/layouts/admin';
 import { formatDate, ProffiError, ProffiPageHeader } from '@/components/proffi-admin/common';
-import { deleteProffiAdmin, getProffiAdmin, postProffiAdmin, ProffiUser } from '@/data/proffi-admin';
+import {
+  deleteProffiAdmin,
+  getProffiAdmin,
+  postProffiAdmin,
+  ProffiUser,
+  putProffiAdmin,
+} from '@/data/proffi-admin';
 import { adminOnly } from '@/utils/auth-utils';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { FormEvent, useEffect, useState } from 'react';
 
+const emptyForm = {
+  name: '',
+  phone: '+373',
+  email: '',
+  city: 'Chișinău',
+  services: '',
+  password: 'Treabo12345',
+};
+
 export default function ProffiSpecialists() {
   const [rows, setRows] = useState<ProffiUser[]>([]);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ name: '', phone: '+373', email: '', city: 'Chișinău', password: 'Treabo12345' });
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   function load() {
@@ -19,13 +35,46 @@ export default function ProffiSpecialists() {
 
   useEffect(load, []);
 
+  function edit(user: ProffiUser) {
+    setEditingId(user.id);
+    setForm({
+      name: user.name || '',
+      phone: user.phone || '+373',
+      email: user.email || '',
+      city: user.city || 'Chișinău',
+      services: user.services?.join(', ') || '',
+      password: '',
+    });
+  }
+
+  function reset() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setError('');
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     setSaving(true);
     setError('');
+
+    const payload = {
+      ...form,
+      role: 'specialist',
+      services: form.services
+        .split(',')
+        .map((service) => service.trim())
+        .filter(Boolean),
+      password: form.password || undefined,
+    };
+
     try {
-      await postProffiAdmin<ProffiUser>('/api/admin/users', { ...form, role: 'specialist' });
-      setForm({ name: '', phone: '+373', email: '', city: form.city, password: 'Treabo12345' });
+      if (editingId) {
+        await putProffiAdmin<ProffiUser>(`/api/admin/users/${encodeURIComponent(editingId)}`, payload);
+      } else {
+        await postProffiAdmin<ProffiUser>('/api/admin/users', payload);
+      }
+      reset();
       load();
     } catch (e: any) {
       setError(e.response?.data?.message || e.response?.data?.detail || e.message);
@@ -37,6 +86,7 @@ export default function ProffiSpecialists() {
   async function remove(id: string) {
     if (!confirm('Удалить специалиста?')) return;
     await deleteProffiAdmin(`/api/admin/users/${encodeURIComponent(id)}`);
+    if (editingId === id) reset();
     load();
   }
 
@@ -44,13 +94,55 @@ export default function ProffiSpecialists() {
     <>
       <ProffiPageHeader title="Специалисты Treabo" subtitle="Мастера, которые откликаются на заявки." />
       {error ? <ProffiError message={error} /> : null}
+
       <form onSubmit={submit} className="mb-6 grid gap-3 rounded border border-border-200 bg-light p-5 md:grid-cols-6">
-        <input className="rounded border border-border-200 px-3 py-2" placeholder="Имя" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <input className="rounded border border-border-200 px-3 py-2" placeholder="Телефон +373" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
-        <input className="rounded border border-border-200 px-3 py-2" placeholder="Email, можно пусто" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input className="rounded border border-border-200 px-3 py-2" placeholder="Город" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-        <input className="rounded border border-border-200 px-3 py-2" placeholder="Пароль" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-        <button className="rounded bg-accent px-4 py-2 font-semibold text-light" disabled={saving}>{saving ? 'Сохранение...' : 'Добавить'}</button>
+        <input
+          className="rounded border border-border-200 px-3 py-2"
+          placeholder="Имя"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          required
+        />
+        <input
+          className="rounded border border-border-200 px-3 py-2"
+          placeholder="Телефон +373"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          required
+        />
+        <input
+          className="rounded border border-border-200 px-3 py-2"
+          placeholder="Email, можно пусто"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
+        <input
+          className="rounded border border-border-200 px-3 py-2"
+          placeholder="Город"
+          value={form.city}
+          onChange={(e) => setForm({ ...form, city: e.target.value })}
+        />
+        <input
+          className="rounded border border-border-200 px-3 py-2"
+          placeholder={editingId ? 'Новый пароль, можно пусто' : 'Пароль'}
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required={!editingId}
+        />
+        <button className="rounded bg-accent px-4 py-2 font-semibold text-light" disabled={saving}>
+          {saving ? 'Сохранение...' : editingId ? 'Сохранить' : 'Добавить'}
+        </button>
+        <input
+          className="rounded border border-border-200 px-3 py-2 md:col-span-4"
+          placeholder="Услуги через запятую: санузел, плитка, сантехника"
+          value={form.services}
+          onChange={(e) => setForm({ ...form, services: e.target.value })}
+        />
+        {editingId ? (
+          <button type="button" onClick={reset} className="rounded bg-gray-100 px-4 py-2 font-semibold">
+            Отмена
+          </button>
+        ) : null}
       </form>
 
       <div className="overflow-hidden rounded border border-border-200 bg-light">
@@ -79,7 +171,12 @@ export default function ProffiSpecialists() {
                   <td className="px-4 py-3">{user.services?.length ? user.services.join(', ') : '-'}</td>
                   <td className="px-4 py-3 text-body">{formatDate(user.created_at)}</td>
                   <td className="px-4 py-3 text-right">
-                    <button type="button" onClick={() => remove(user.id)} className="text-red-600">Удалить</button>
+                    <button type="button" onClick={() => edit(user)} className="me-4 text-accent">
+                      Редактировать
+                    </button>
+                    <button type="button" onClick={() => remove(user.id)} className="text-red-600">
+                      Удалить
+                    </button>
                   </td>
                 </tr>
               ))}
