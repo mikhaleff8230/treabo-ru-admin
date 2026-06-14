@@ -74,9 +74,24 @@ export type TreaboResponseSettings = {
   id?: number;
   free_daily_limit: number;
   default_response_price_mdl: number;
+  manual_deposit_amount_mdl: number;
+  manual_deposit_url?: string | null;
   is_active: boolean;
   created_at?: string | null;
   updated_at?: string | null;
+};
+
+export type TreaboBalanceDeposit = {
+  id: string;
+  seller_id: string;
+  seller_name?: string | null;
+  seller_phone?: string | null;
+  amount: number;
+  status: string;
+  payment_id?: string | null;
+  reported_at?: string | null;
+  paid_at?: string | null;
+  created_at?: string | null;
 };
 
 export type ProffiTask = {
