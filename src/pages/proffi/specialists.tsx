@@ -1,6 +1,6 @@
 import Layout from '@/components/layouts/admin';
 import { formatDate, ProffiError, ProffiPageHeader } from '@/components/proffi-admin/common';
-import { getProffiAdmin, postProffiAdmin, ProffiUser } from '@/data/proffi-admin';
+import { deleteProffiAdmin, getProffiAdmin, postProffiAdmin, ProffiUser } from '@/data/proffi-admin';
 import { adminOnly } from '@/utils/auth-utils';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { FormEvent, useEffect, useState } from 'react';
@@ -34,9 +34,15 @@ export default function ProffiSpecialists() {
     }
   }
 
+  async function remove(id: string) {
+    if (!confirm('Удалить специалиста?')) return;
+    await deleteProffiAdmin(`/api/admin/users/${encodeURIComponent(id)}`);
+    load();
+  }
+
   return (
     <>
-      <ProffiPageHeader title="Специалисты Treabo" subtitle="Пользователи приложения с ролью store_owner/specialist." />
+      <ProffiPageHeader title="Специалисты Treabo" subtitle="Мастера, которые откликаются на заявки." />
       {error ? <ProffiError message={error} /> : null}
       <form onSubmit={submit} className="mb-6 grid gap-3 rounded border border-border-200 bg-light p-5 md:grid-cols-6">
         <input className="rounded border border-border-200 px-3 py-2" placeholder="Имя" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -46,6 +52,7 @@ export default function ProffiSpecialists() {
         <input className="rounded border border-border-200 px-3 py-2" placeholder="Пароль" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
         <button className="rounded bg-accent px-4 py-2 font-semibold text-light" disabled={saving}>{saving ? 'Сохранение...' : 'Добавить'}</button>
       </form>
+
       <div className="overflow-hidden rounded border border-border-200 bg-light">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
@@ -58,6 +65,7 @@ export default function ProffiSpecialists() {
                 <th className="px-4 py-3">Город</th>
                 <th className="px-4 py-3">Услуги</th>
                 <th className="px-4 py-3">Создан</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -70,11 +78,14 @@ export default function ProffiSpecialists() {
                   <td className="px-4 py-3">{user.city || '-'}</td>
                   <td className="px-4 py-3">{user.services?.length ? user.services.join(', ') : '-'}</td>
                   <td className="px-4 py-3 text-body">{formatDate(user.created_at)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button type="button" onClick={() => remove(user.id)} className="text-red-600">Удалить</button>
+                  </td>
                 </tr>
               ))}
               {!rows.length ? (
                 <tr>
-                  <td className="px-4 py-8 text-center text-body" colSpan={7}>
+                  <td className="px-4 py-8 text-center text-body" colSpan={8}>
                     Данных пока нет
                   </td>
                 </tr>

@@ -1,24 +1,109 @@
 import Layout from '@/components/layouts/admin';
 import { formatDate, ProffiError, ProffiPageHeader, StatusBadge } from '@/components/proffi-admin/common';
-import { getProffiAdmin, ProffiTask } from '@/data/proffi-admin';
+import { deleteProffiAdmin, getProffiAdmin, postProffiAdmin, ProffiTask, ProffiUser } from '@/data/proffi-admin';
 import { adminOnly } from '@/utils/auth-utils';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
+
+type TreaboCategory = {
+  id: string;
+  name_ru: string;
+};
+
+const emptyTaskForm = {
+  title: '',
+  description: '',
+  category: '',
+  city: 'Chișinău',
+  address: '',
+  budget: '',
+  response_price_mdl: '15',
+  deadline: 'По договоренности',
+  customer_id: '',
+};
 
 export default function ProffiTasks() {
   const [rows, setRows] = useState<ProffiTask[]>([]);
+  const [customers, setCustomers] = useState<ProffiUser[]>([]);
+  const [categories, setCategories] = useState<TreaboCategory[]>([]);
+  const [form, setForm] = useState(emptyTaskForm);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  function loadTasks() {
     getProffiAdmin<ProffiTask[]>('/api/admin/tasks')
       .then(setRows)
       .catch((e) => setError(e.response?.data?.detail || e.message));
+  }
+
+  useEffect(() => {
+    loadTasks();
+    getProffiAdmin<ProffiUser[]>('/api/admin/customers').then((data) => {
+      setCustomers(data);
+      setForm((current) => ({ ...current, customer_id: current.customer_id || data[0]?.id || '' }));
+    });
+    getProffiAdmin<TreaboCategory[]>('/api/admin/categories').then((data) => {
+      setCategories(data);
+      setForm((current) => ({ ...current, category: current.category || data[0]?.id || '' }));
+    });
   }, []);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await postProffiAdmin<ProffiTask>('/api/admin/tasks', {
+        ...form,
+        customer_id: Number(form.customer_id),
+        budget: form.budget ? Number(form.budget) : null,
+        response_price_mdl: form.response_price_mdl ? Number(form.response_price_mdl) : 15,
+      });
+      setForm({ ...emptyTaskForm, customer_id: form.customer_id, category: form.category, city: form.city });
+      loadTasks();
+    } catch (e: any) {
+      setError(e.response?.data?.message || e.response?.data?.detail || e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove(id: string) {
+    if (!confirm('Удалить заявку?')) return;
+    await deleteProffiAdmin(`/api/admin/tasks/${encodeURIComponent(id)}`);
+    loadTasks();
+  }
 
   return (
     <>
-      <ProffiPageHeader title="Заказы Treabo" subtitle="Заявки, созданные заказчиками в приложении." />
+      <ProffiPageHeader title="Заказы Treabo" subtitle="Заявки, созданные заказчиками в приложении или вручную из админки." />
       {error ? <ProffiError message={error} /> : null}
+
+      <form onSubmit={submit} className="mb-6 grid gap-3 rounded border border-border-200 bg-light p-5 md:grid-cols-4">
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Название заявки" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+        <select className="rounded border border-border-200 px-3 py-2" value={form.customer_id} onChange={(e) => setForm({ ...form, customer_id: e.target.value })} required>
+          <option value="">Заказчик</option>
+          {customers.map((customer) => (
+            <option key={customer.id} value={customer.id}>{customer.name} {customer.phone ? `(${customer.phone})` : ''}</option>
+          ))}
+        </select>
+        <select className="rounded border border-border-200 px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
+          <option value="">Категория</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>{category.name_ru || category.id}</option>
+          ))}
+        </select>
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Город" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Адрес" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Бюджет MDL" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} />
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Цена отклика MDL" value={form.response_price_mdl} onChange={(e) => setForm({ ...form, response_price_mdl: e.target.value })} />
+        <input className="rounded border border-border-200 px-3 py-2" placeholder="Срок" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
+        <textarea className="rounded border border-border-200 px-3 py-2 md:col-span-3" placeholder="Описание" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+        <button className="rounded bg-accent px-4 py-2 font-semibold text-light" disabled={saving || !customers.length || !categories.length}>
+          {saving ? 'Сохранение...' : 'Создать заявку'}
+        </button>
+      </form>
+
       <div className="overflow-hidden rounded border border-border-200 bg-light">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
@@ -34,6 +119,7 @@ export default function ProffiTasks() {
                 <th className="px-4 py-3">Отклики</th>
                 <th className="px-4 py-3">Фото</th>
                 <th className="px-4 py-3">Создан</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -51,15 +137,18 @@ export default function ProffiTasks() {
                   </td>
                   <td className="px-4 py-3">{task.accepted_specialist_name || '-'}</td>
                   <td className="px-4 py-3">{task.city || '-'}</td>
-                  <td className="px-4 py-3">{task.budget ? `${task.budget} ₽` : '-'}</td>
+                  <td className="px-4 py-3">{task.budget ? `${task.budget} MDL` : '-'}</td>
                   <td className="px-4 py-3">{task.applications_count}</td>
                   <td className="px-4 py-3">{task.photos_count}</td>
                   <td className="px-4 py-3 text-body">{formatDate(task.created_at)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button type="button" onClick={() => remove(task.id)} className="text-red-600">Удалить</button>
+                  </td>
                 </tr>
               ))}
               {!rows.length ? (
                 <tr>
-                  <td className="px-4 py-8 text-center text-body" colSpan={10}>
+                  <td className="px-4 py-8 text-center text-body" colSpan={11}>
                     Заказов пока нет
                   </td>
                 </tr>

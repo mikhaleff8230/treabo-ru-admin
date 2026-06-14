@@ -1,6 +1,6 @@
 import Layout from '@/components/layouts/admin';
 import { formatDate, ProffiError, ProffiPageHeader } from '@/components/proffi-admin/common';
-import { getProffiAdmin, postProffiAdmin, ProffiUser } from '@/data/proffi-admin';
+import { deleteProffiAdmin, getProffiAdmin, postProffiAdmin, ProffiUser } from '@/data/proffi-admin';
 import { adminOnly } from '@/utils/auth-utils';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { FormEvent, useEffect, useState } from 'react';
@@ -34,9 +34,15 @@ export default function ProffiCustomers() {
     }
   }
 
+  async function remove(id: string) {
+    if (!confirm('Удалить заказчика?')) return;
+    await deleteProffiAdmin(`/api/admin/users/${encodeURIComponent(id)}`);
+    load();
+  }
+
   return (
     <>
-      <ProffiPageHeader title="Заказчики Treabo" subtitle="Пользователи приложения с ролью customer." />
+      <ProffiPageHeader title="Заказчики Treabo" subtitle="Клиенты, которые создают заявки." />
       {error ? <ProffiError message={error} /> : null}
       <form onSubmit={submit} className="mb-6 grid gap-3 rounded border border-border-200 bg-light p-5 md:grid-cols-6">
         <input className="rounded border border-border-200 px-3 py-2" placeholder="Имя" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -46,12 +52,12 @@ export default function ProffiCustomers() {
         <input className="rounded border border-border-200 px-3 py-2" placeholder="Пароль" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
         <button className="rounded bg-accent px-4 py-2 font-semibold text-light" disabled={saving}>{saving ? 'Сохранение...' : 'Добавить'}</button>
       </form>
-      <UsersTable rows={rows} />
+      <UsersTable rows={rows} onDelete={remove} />
     </>
   );
 }
 
-function UsersTable({ rows }: { rows: ProffiUser[] }) {
+function UsersTable({ rows, onDelete }: { rows: ProffiUser[]; onDelete: (id: string) => void }) {
   return (
     <div className="overflow-hidden rounded border border-border-200 bg-light">
       <div className="overflow-x-auto">
@@ -64,6 +70,7 @@ function UsersTable({ rows }: { rows: ProffiUser[] }) {
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Город</th>
               <th className="px-4 py-3">Создан</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -75,11 +82,14 @@ function UsersTable({ rows }: { rows: ProffiUser[] }) {
                 <td className="px-4 py-3">{user.email || '-'}</td>
                 <td className="px-4 py-3">{user.city || '-'}</td>
                 <td className="px-4 py-3 text-body">{formatDate(user.created_at)}</td>
+                <td className="px-4 py-3 text-right">
+                  <button type="button" onClick={() => onDelete(user.id)} className="text-red-600">Удалить</button>
+                </td>
               </tr>
             ))}
             {!rows.length ? (
               <tr>
-                <td className="px-4 py-8 text-center text-body" colSpan={6}>
+                <td className="px-4 py-8 text-center text-body" colSpan={7}>
                   Данных пока нет
                 </td>
               </tr>
