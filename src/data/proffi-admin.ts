@@ -70,6 +70,15 @@ export type TreaboFilter = {
   value: string;
 };
 
+export type TreaboResponseSettings = {
+  id?: number;
+  free_daily_limit: number;
+  default_response_price_mdl: number;
+  is_active: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
 export type ProffiTask = {
   id: string;
   title: string;

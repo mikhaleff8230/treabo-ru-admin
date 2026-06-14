@@ -148,6 +148,7 @@ export const Routes = {
     chats: '/proffi/chats',
     categories: '/proffi/categories',
     filters: '/proffi/filters',
+    responseSettings: '/proffi/response-settings',
     aiChat: '/proffi/ai-chat',
   },
 };

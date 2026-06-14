@@ -86,6 +86,12 @@ export const siteSettings = {
         permissions: adminOnly,
       },
       {
+        href: Routes.proffi.responseSettings,
+        label: 'Treabo настройки откликов',
+        icon: 'DiaryIcon',
+        permissions: adminOnly,
+      },
+      {
         href: Routes.proffi.aiChat,
         label: 'AI чат',
         icon: 'QuestionIcon',
