@@ -49,6 +49,8 @@ export type ProffiUser = {
   city?: string | null;
   email?: string | null;
   services?: string[];
+  avatar?: string | null;
+  portfolio?: string[];
   created_at?: string | null;
 };
 
@@ -110,9 +112,18 @@ export type ProffiTask = {
   budget?: number | null;
   response_price_mdl?: number | null;
   deadline?: string | null;
+  photos?: string[];
   applications_count: number;
   photos_count: number;
   created_at?: string | null;
+};
+
+export type ProffiUpload = {
+  disk: string;
+  path: string;
+  url: string;
+  mime?: string | null;
+  size?: number | null;
 };
 
 export type ProffiApplication = {
@@ -196,5 +207,19 @@ export async function putProffiAdmin<T>(path: string, data: unknown): Promise<T>
 
 export async function deleteProffiAdmin<T>(path: string): Promise<T> {
   const response = await proffiAdminApi.delete<T>(path);
+  return response.data;
+}
+
+export async function uploadProffiAdminFile(file: File, folder = 'admin'): Promise<ProffiUpload> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  const response = await proffiAdminApi.post<ProffiUpload>('/api/uploads', formData, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
   return response.data;
 }

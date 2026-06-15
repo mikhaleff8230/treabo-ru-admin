@@ -8,12 +8,27 @@ import {
   ProffiUser,
   putProffiAdmin,
   TreaboCategory,
+  uploadProffiAdminFile,
 } from '@/data/proffi-admin';
 import { adminOnly } from '@/utils/auth-utils';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
-const emptyTaskForm = {
+type TaskForm = {
+  title: string;
+  description: string;
+  category: string;
+  city: string;
+  address: string;
+  budget: string;
+  response_price_mdl: string;
+  deadline: string;
+  customer_id: string;
+  status: string;
+  photos: string[];
+};
+
+const emptyTaskForm: TaskForm = {
   title: '',
   description: '',
   category: '',
@@ -24,6 +39,7 @@ const emptyTaskForm = {
   deadline: 'По договоренности',
   customer_id: '',
   status: 'open',
+  photos: [],
 };
 
 function categoryLabel(category: TreaboCategory) {
@@ -38,6 +54,7 @@ export default function ProffiTasks() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const sortedCategories = useMemo(
     () =>
@@ -84,6 +101,7 @@ export default function ProffiTasks() {
       deadline: task.deadline || 'По договоренности',
       customer_id: task.customer_id || '',
       status: task.status || 'open',
+      photos: task.photos || [],
     });
   }
 
@@ -94,8 +112,36 @@ export default function ProffiTasks() {
       customer_id: customers[0]?.id || '',
       category: sortedCategories[0]?.id || '',
       city: form.city || emptyTaskForm.city,
+      photos: [],
     });
     setError('');
+  }
+
+  async function uploadPhotos(files: FileList | null) {
+    const selected = Array.from(files || []).slice(0, Math.max(0, 10 - form.photos.length));
+    if (!selected.length) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const uploads = await Promise.all(selected.map((file) => uploadProffiAdminFile(file, 'tasks')));
+      setForm((current) => ({
+        ...current,
+        photos: [...current.photos, ...uploads.map((upload) => upload.url)].slice(0, 10),
+      }));
+    } catch (e: any) {
+      setError(e.response?.data?.message || e.response?.data?.detail || e.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removePhoto(url: string) {
+    setForm((current) => ({
+      ...current,
+      photos: current.photos.filter((photo) => photo !== url),
+    }));
   }
 
   async function submit(event: FormEvent) {
@@ -107,6 +153,7 @@ export default function ProffiTasks() {
       customer_id: Number(form.customer_id),
       budget: form.budget ? Number(form.budget) : null,
       response_price_mdl: form.response_price_mdl ? Number(form.response_price_mdl) : 15,
+      photos: form.photos,
     };
 
     try {
@@ -221,6 +268,36 @@ export default function ProffiTasks() {
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           required
         />
+        <div className="md:col-span-4">
+          <label className="mb-2 block text-sm font-semibold text-heading">Фото задания</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="w-full rounded border border-border-200 px-3 py-2"
+            disabled={uploading || form.photos.length >= 10}
+            onChange={(event) => uploadPhotos(event.target.files)}
+          />
+          <div className="mt-2 text-xs text-body">
+            {uploading ? 'Загрузка фото...' : `Загружено ${form.photos.length}/10`}
+          </div>
+          {form.photos.length ? (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {form.photos.map((photo) => (
+                <div key={photo} className="relative h-20 w-20 overflow-hidden rounded border border-border-200">
+                  <img src={photo} alt="" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(photo)}
+                    className="absolute right-1 top-1 rounded bg-red-600 px-1.5 py-0.5 text-xs text-light"
+                  >
+                    x
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div className="flex gap-3">
           <button
             className="flex-1 rounded bg-accent px-4 py-2 font-semibold text-light"
@@ -260,6 +337,13 @@ export default function ProffiTasks() {
                   <td className="min-w-[260px] px-4 py-3">
                     <div className="font-medium text-heading">{task.title || '-'}</div>
                     <div className="mt-1 line-clamp-2 text-xs text-body">{task.address || task.description || ''}</div>
+                    {task.photos?.length ? (
+                      <div className="mt-2 flex gap-1.5">
+                        {task.photos.slice(0, 3).map((photo) => (
+                          <img key={photo} src={photo} alt="" className="h-10 w-10 rounded object-cover" />
+                        ))}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge value={task.status} />
