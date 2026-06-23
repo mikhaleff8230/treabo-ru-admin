@@ -15,9 +15,9 @@ RUN npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
 
 COPY . .
 
-ARG NEXT_PUBLIC_REST_API_ENDPOINT=https://api.treabo.md
-ARG NEXT_PUBLIC_API_URL=https://api.treabo.md
-ARG NEXT_PUBLIC_SHOP_URL=https://treabo.md
+ARG NEXT_PUBLIC_REST_API_ENDPOINT=https://api.treabo.ru
+ARG NEXT_PUBLIC_API_URL=https://api.treabo.ru
+ARG NEXT_PUBLIC_SHOP_URL=https://treabo.ru
 ENV NEXT_PUBLIC_REST_API_ENDPOINT=$NEXT_PUBLIC_REST_API_ENDPOINT
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SHOP_URL=$NEXT_PUBLIC_SHOP_URL
