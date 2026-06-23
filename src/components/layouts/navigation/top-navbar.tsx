@@ -11,8 +11,6 @@ import {
   getAuthCredentials,
   hasAccess,
 } from '@/utils/auth-utils';
-import LanguageSwitcher from './language-switer';
-import { Config } from '@/config';
 import { useSellerBalanceQuery } from '@/data/seller-balance';
 import { WalletIcon } from '@/components/icons/wallet-icon';
 import DepositBalanceModal from '@/components/billing/deposit-balance-modal';
@@ -23,10 +21,8 @@ const Navbar = () => {
 	const { toggleSidebar } = useUI();
 
 	const { permissions } = getAuthCredentials();
-  const { balance, isLoading: isBalanceLoading } = useSellerBalanceQuery();
+  const { balance, isLoading: isBalanceLoading, error: balanceError } = useSellerBalanceQuery();
   const [showDepositModal, setShowDepositModal] = useState(false);
-
-  const { enableMultiLang } = Config;
 
   return (
     <header className="fixed z-40 w-full bg-white shadow">
@@ -55,8 +51,10 @@ const Navbar = () => {
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {isBalanceLoading ? (
                   <span className="text-gray-400">...</span>
+                ) : balanceError ? (
+                  <span className="text-gray-400" title="Не удалось загрузить баланс">—</span>
                 ) : (
-                  `${(balance?.balance || 0).toFixed(2)} ₽`
+                  `${(balance?.balance ?? 0).toFixed(2)} ₽`
                 )}
               </span>
             </button>
@@ -70,7 +68,6 @@ const Navbar = () => {
               {t('common:text-create-shop')}
             </LinkButton>
           )}
-          {enableMultiLang ? <LanguageSwitcher /> : null}
           <AuthorizedMenu />
         </div>
       </nav>

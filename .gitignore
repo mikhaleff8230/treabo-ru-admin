@@ -49,3 +49,6 @@ __generated__
 # PWA
 workbox-*.js
 sw.js
+
+# TypeScript build cache
+*.tsbuildinfo

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { API_ENDPOINTS } from '@/data/client/api-endpoints';
 import { HttpClient } from '@/data/client/http-client';
+import { adminAndOwnerOnly, getAuthCredentials, hasAccess } from '@/utils/auth-utils';
 import { toast } from 'react-toastify';
 
 export interface SellerBalance {
@@ -33,11 +33,15 @@ export interface DepositResponse {
 }
 
 export const useSellerBalanceQuery = () => {
+  const { token, permissions } = getAuthCredentials();
+  const enabled = !!token && hasAccess(adminAndOwnerOnly, permissions);
+
   const { data, error, isLoading, refetch } = useQuery<BalanceResponse, Error>(
     ['seller-balance'],
-    () => HttpClient.get<BalanceResponse>(`/api/seller/balance`),
+    () => HttpClient.get<BalanceResponse>(`/seller/balance`),
     {
-      retry: 1,
+      enabled,
+      retry: false,
     }
   );
 
@@ -53,7 +57,7 @@ export const useDepositMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation<DepositResponse, Error, DepositRequest>(
-    (data) => HttpClient.post<DepositResponse>(`/api/seller/balance/deposit`, data),
+    (data) => HttpClient.post<DepositResponse>(`/seller/balance/deposit`, data),
     {
       onSuccess: (response) => {
         // Проверяем payment_url в корне ответа или в data
@@ -93,7 +97,7 @@ export const useCheckPendingDeposit = () => {
   const queryClient = useQueryClient();
 
   return useMutation<CheckPendingResponse, Error, void>(
-    () => HttpClient.get<CheckPendingResponse>(`/api/seller/balance/check-pending`),
+    () => HttpClient.get<CheckPendingResponse>(`/seller/balance/check-pending`),
     {
       onSuccess: (response) => {
         if (response.success && response.data.processed) {
