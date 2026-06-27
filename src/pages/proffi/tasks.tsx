@@ -1,4 +1,5 @@
 import Layout from '@/components/layouts/admin';
+import RussiaCityInput from '@/components/proffi-admin/RussiaCityInput';
 import { formatDate, ProffiError, ProffiPageHeader, StatusBadge } from '@/components/proffi-admin/common';
 import {
   deleteProffiAdmin,
@@ -32,7 +33,7 @@ const emptyTaskForm: TaskForm = {
   title: '',
   description: '',
   category: '',
-  city: 'Chișinău',
+  city: 'Москва',
   address: '',
   budget: '',
   response_price_mdl: '15',
@@ -94,7 +95,7 @@ export default function ProffiTasks() {
       title: task.title || '',
       description: task.description || '',
       category: task.category_id || task.category || '',
-      city: task.city || 'Chișinău',
+      city: task.city || 'Москва',
       address: task.address || '',
       budget: task.budget ? String(task.budget) : '',
       response_price_mdl: task.response_price_mdl ? String(task.response_price_mdl) : '15',
@@ -230,13 +231,7 @@ export default function ProffiTasks() {
           <option value="done">Готово</option>
           <option value="cancelled">Отменен</option>
         </select>
-        <input
-          className="rounded border border-border-200 px-3 py-2"
-          placeholder="Город"
-          value={form.city}
-          onChange={(e) => setForm({ ...form, city: e.target.value })}
-          required
-        />
+        <RussiaCityInput value={form.city} onChange={(city) => setForm({ ...form, city })} required />
         <input
           className="rounded border border-border-200 px-3 py-2"
           placeholder="Адрес"
@@ -301,7 +296,7 @@ export default function ProffiTasks() {
         <div className="flex gap-3">
           <button
             className="flex-1 rounded bg-accent px-4 py-2 font-semibold text-light"
-            disabled={saving || !customers.length || !sortedCategories.length}
+            disabled={saving}
           >
             {saving ? 'Сохранение...' : editingId ? 'Сохранить' : 'Создать заявку'}
           </button>
