@@ -211,6 +211,70 @@ export type AiChatKnowledgeInput = {
   is_active?: boolean;
 };
 
+export type ProffiWork = {
+  id: number;
+  category_id?: string | null;
+  title: string;
+  slug?: string | null;
+  aliases?: string[] | null;
+  description?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+  category?: TreaboCategory | null;
+};
+
+export type ProffiWorkInput = {
+  category_id?: string | null;
+  title: string;
+  slug?: string | null;
+  aliases?: string[] | null;
+  description?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+};
+
+export type ProffiWorkQuestionType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'yesno'
+  | 'select'
+  | 'multiselect'
+  | 'photo';
+
+export type ProffiWorkQuestion = {
+  id: number;
+  work_id: number;
+  question: string;
+  field_key?: string | null;
+  type: ProffiWorkQuestionType;
+  options?: string[] | null;
+  placeholder?: string | null;
+  help_text?: string | null;
+  is_required?: boolean;
+  sort_order?: number;
+  is_active?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+  work?: ProffiWork | null;
+  category_id?: string | null;
+};
+
+export type ProffiWorkQuestionInput = {
+  work_id: number;
+  question: string;
+  field_key?: string | null;
+  type: ProffiWorkQuestionType;
+  options?: string[] | null;
+  placeholder?: string | null;
+  help_text?: string | null;
+  is_required?: boolean;
+  sort_order?: number;
+  is_active?: boolean;
+};
+
 export async function getProffiAdmin<T>(path: string): Promise<T> {
   const response = await proffiAdminApi.get<T>(proffiApiPath(path));
   return response.data;

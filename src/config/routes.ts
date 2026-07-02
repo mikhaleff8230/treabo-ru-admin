@@ -147,6 +147,8 @@ export const Routes = {
     applications: '/proffi/applications',
     chats: '/proffi/chats',
     categories: '/proffi/categories',
+    works: '/proffi/works',
+    questions: '/proffi/questions',
     filters: '/proffi/filters',
     responseSettings: '/proffi/response-settings',
     aiChat: '/proffi/ai-chat',

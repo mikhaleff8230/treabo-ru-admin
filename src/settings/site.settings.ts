@@ -75,8 +75,20 @@ export const siteSettings = {
       },
       {
         href: Routes.proffi.categories,
-        label: 'Treabo категории',
+        label: 'Категории',
         icon: 'CategoriesIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.works,
+        label: 'Работы',
+        icon: 'CategoriesIcon',
+        permissions: adminOnly,
+      },
+      {
+        href: Routes.proffi.questions,
+        label: 'Вопросы',
+        icon: 'QuestionIcon',
         permissions: adminOnly,
       },
       {
@@ -93,7 +105,7 @@ export const siteSettings = {
       },
       {
         href: Routes.proffi.aiChat,
-        label: 'AI чат',
+        label: 'AI инструкции',
         icon: 'QuestionIcon',
         permissions: adminOnly,
       },
