@@ -77,6 +77,7 @@ export type TreaboCategory = {
   id: string;
   parent_id?: string | null;
   icon?: string | null;
+  image?: string | null;
   name_ru: string;
   name_ro: string;
   slug?: string | null;
@@ -91,12 +92,43 @@ export type TreaboFilter = {
   value: string;
 };
 
+export type TreaboMatchingSettings = {
+  id?: number;
+  category_weight: number;
+  work_weight: number;
+  rating_weight: number;
+  reviews_weight: number;
+  online_weight: number;
+  profile_relevance_weight: number;
+  min_rating: number;
+  min_reviews: number;
+  max_recommended: number;
+  is_active: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
 export type TreaboResponseSettings = {
   id?: number;
   free_daily_limit: number;
+  free_per_task_limit?: number;
   default_response_price_mdl: number;
   manual_deposit_amount_mdl: number;
   manual_deposit_url?: string | null;
+  is_active: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type TreaboMobileUpdateSettings = {
+  id?: number;
+  latest_version: string;
+  latest_build: number;
+  min_supported_build: number;
+  force_update: boolean;
+  android_url?: string | null;
+  ios_url?: string | null;
+  release_notes?: string | null;
   is_active: boolean;
   created_at?: string | null;
   updated_at?: string | null;
@@ -131,6 +163,9 @@ export type ProffiTask = {
   lat?: number | null;
   lng?: number | null;
   budget?: number | null;
+  budget_type?: string | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
   response_price_mdl?: number | null;
   deadline?: string | null;
   photos?: string[];
@@ -158,6 +193,34 @@ export type ProffiApplication = {
   chat_id?: string | null;
   message?: string | null;
   created_at?: string | null;
+};
+
+export type ProffiReview = {
+  id: string;
+  task_id?: string | null;
+  task_title?: string | null;
+  specialist_id: string;
+  specialist_name?: string | null;
+  customer_id: string;
+  customer_name?: string | null;
+  rating: number;
+  comment?: string | null;
+  photos?: string[];
+  created_at?: string | null;
+};
+
+export type ProffiVerification = {
+  id: string;
+  user_id: string;
+  user_name?: string | null;
+  user_phone?: string | null;
+  status: string;
+  passport_main_photo?: string | null;
+  passport_registration_photo?: string | null;
+  passport_selfie_photo?: string | null;
+  moderator_comment?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 export type ProffiChat = {
