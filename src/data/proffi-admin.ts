@@ -54,7 +54,6 @@ export type ProffiStats = {
   chats: number;
   messages: number;
   categories: number;
-  filters: number;
 };
 
 export type ProffiUser = {
